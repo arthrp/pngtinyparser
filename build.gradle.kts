@@ -33,6 +33,14 @@ publishing {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        afterSuite( KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
+            if (desc.parent == null) { // will match the outermost suite
+                println("Result: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)")
+            }
+        })
+        )
+    }
 }
 kotlin {
     jvmToolchain(17)
