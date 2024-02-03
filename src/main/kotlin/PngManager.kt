@@ -2,31 +2,34 @@ package org.arthrp
 
 import java.io.File
 import java.io.FileInputStream
+import java.io.InputStream
 import java.nio.file.Paths
 import java.nio.ByteBuffer
 
 class PngManager {
     fun parse(filePath: String): PngImage {
-        val path = Paths.get(filePath)
-
         File(filePath).inputStream().use { input ->
-            if(!hasPngHeader(input)) throw IllegalArgumentException("Not a valid png file!")
-            val list = emptyList<PngChunk>().toMutableList()
-            var chunk = readChunk(input)
-
-            list.add(chunk)
-            while(chunk.chunkType != "IEND"){
-                chunk = readChunk(input)
-                list.add(chunk)
-            }
-
-            val (width,height) = parseIhdr(list[0])
-            val pngImg = PngImage(list, width, height)
-            return pngImg
+            return parse(input)
         }
     }
 
-    private fun readChunk(stream: FileInputStream): PngChunk{
+    fun parse(input: InputStream): PngImage {
+        if(!hasPngHeader(input)) throw IllegalArgumentException("Not a valid png file!")
+        val list = emptyList<PngChunk>().toMutableList()
+        var chunk = readChunk(input)
+
+        list.add(chunk)
+        while(chunk.chunkType != "IEND"){
+            chunk = readChunk(input)
+            list.add(chunk)
+        }
+
+        val (width,height) = parseIhdr(list[0])
+        val pngImg = PngImage(list, width, height)
+        return pngImg
+    }
+
+    private fun readChunk(stream: InputStream): PngChunk{
         val buff = ByteArray(4)
 
         //Chunk length
@@ -59,7 +62,7 @@ class PngManager {
         return ByteBuffer.wrap(arr).int
     }
 
-    private fun hasPngHeader(stream: FileInputStream): Boolean {
+    private fun hasPngHeader(stream: InputStream): Boolean {
         val headerBytes = ByteArray(8)
         val pngHeader = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(),
             0x1A.toByte(), 0x0A.toByte())
