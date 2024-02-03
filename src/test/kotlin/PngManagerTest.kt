@@ -14,5 +14,6 @@ internal class PngManagerTest {
         val exception = assertFailsWith<IllegalArgumentException> {
             p.parse(file.absolutePath)
         }
+        assertEquals(exception.message, "Not a valid png file!")
     }
 }
